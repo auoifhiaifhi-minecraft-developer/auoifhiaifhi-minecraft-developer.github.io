@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Portfólio de desenvolvimento de plugins para Minecraft.">
+<title>auoifhiaifhi Minecraft Development</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Pixelify+Sans:wght@500;600;700&display=swap">
+<style>
+[hidden]{display:none!important}
+img{max-width:100%}
+/* Layout: sticky bar, hero split (copy | rotating block scene), then stacked bands.
+   Square pixel-bevel panels with hard shadows; Minecraft materials (emerald, gold, redstone, diamond, lapis) mark categories. */
+:root{
+  --bg:#0c1012; --bg2:#121819; --panel:#172023; --panel2:#1d292d; --line:#2b3a3f; --shadow:#05080a; --grid:rgba(255,255,255,.025);
+  --fg:#e9f1ed; --muted:#94a89f; --ink:#07120d;
+  --emerald:#2ee27a; --emerald-d:#16a35a; --emerald-dd:#0f7a41;
+  --gold:#f5c542; --redstone:#f0493d; --diamond:#4de3d0; --lapis:#6d86ff;
+  --f-display:'Pixelify Sans','Courier New',monospace;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:5.5rem}
+body{margin:0;font:400 16px/1.65 var(--f-body);color:var(--fg);background-color:var(--bg);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:40px 40px;overflow-x:clip}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a{color:inherit}
+p{margin:0}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance;line-height:1.1}
+:focus-visible{outline:3px solid var(--diamond);outline-offset:3px}
+.wrap{max-width:1180px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.8rem 1.25rem;font:600 .95rem var(--f-body);text-decoration:none;cursor:pointer;
+  border:2px solid var(--line);color:var(--fg);background:var(--panel);box-shadow:4px 4px 0 var(--shadow);transition:transform .1s,box-shadow .1s}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--shadow)}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--shadow)}
+.btn-primary{background:var(--emerald);border-color:var(--emerald-dd);color:var(--ink)}
+.btn-sm{padding:.5rem .9rem;font-size:.85rem;box-shadow:3px 3px 0 var(--shadow)}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:2px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:4rem}
+.brand{display:flex;align-items:center;gap:.6rem;min-width:0;text-decoration:none;font:700 1.3rem var(--f-display)}
+.brand span{min-width:0;font-size:clamp(.82rem,2.8vw,1.15rem);line-height:1.1}
+.brand svg{flex:none}
+.c-top{fill:var(--emerald)}.c-l{fill:var(--emerald-d)}.c-r{fill:var(--emerald-dd)}
+.nav{display:flex;align-items:center;gap:1.6rem}
+.nav a:not(.btn){font:500 .8rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;text-decoration:none;color:var(--muted);padding:.4rem 0;border-bottom:2px solid transparent}
+.nav a:not(.btn):hover,.nav a.on:not(.btn){color:var(--fg);border-color:var(--emerald)}
+.menu-btn{display:none;font:600 .8rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--fg);background:var(--panel);border:2px solid var(--line);padding:.5rem .9rem;cursor:pointer}
+@media (max-width:820px){
+  .menu-btn{display:inline-flex;flex:none}
+  .nav{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:stretch;gap:.4rem;background:var(--bg2);border-bottom:2px solid var(--line);
+    padding:1rem max(16px,env(safe-area-inset-right,0px)) 1.25rem max(16px,env(safe-area-inset-left,0px))}
+  .nav.open{display:flex}
+  .nav a:not(.btn){padding:.7rem 0;border-bottom:1px solid var(--line)}
+}
+
+/* hero */
+.hero{padding-block:clamp(2.5rem,7vw,5.5rem)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:2.5rem;align-items:center}
+.eyebrow{font:500 .8rem var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--emerald)}
+h1{font-weight:700;font-size:clamp(2.4rem,7vw,4.6rem);line-height:1.02;margin:.7rem 0 1.1rem}
+h1 em{font-style:normal;color:var(--emerald)}
+.lead{font-size:1.1rem;color:var(--muted);max-width:52ch}
+.lead b{color:var(--fg);font-weight:600}
+.cta{display:flex;flex-wrap:wrap;gap:.9rem;margin-top:1.8rem}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.8rem 0 0;padding:0;list-style:none}
+.chips li{font:500 .75rem var(--f-mono);padding:.3rem .65rem;border:2px solid var(--line);background:var(--panel);color:var(--fg)}
+.chips li::before{content:"";display:inline-block;width:8px;height:8px;margin-right:.5rem;background:var(--c,var(--emerald))}
+
+/* block scene */
+.scene{position:relative;width:100%;max-width:470px;margin-inline:auto;aspect-ratio:1/1;overflow:hidden;
+  background:radial-gradient(circle at 50% 56%,color-mix(in srgb,var(--emerald) 20%,transparent),transparent 62%),var(--bg2);
+  border:2px solid var(--line);box-shadow:8px 8px 0 var(--shadow)}
+.stage{position:absolute;inset:0;display:grid;place-items:center;perspective:1000px}
+.cube{--s:clamp(130px,26vw,200px);position:relative;width:var(--s);height:var(--s);transform-style:preserve-3d;transform:rotateX(-22deg) rotateY(35deg);animation:spin var(--dur,22s) linear infinite}
+.cube.rev{animation-direction:reverse}
+.face{position:absolute;inset:0;background-size:100% 100%;image-rendering:pixelated}
+.f-front{transform:translateZ(calc(var(--s)/2))}
+.f-back{transform:rotateY(180deg) translateZ(calc(var(--s)/2));filter:brightness(.7)}
+.f-right{transform:rotateY(90deg) translateZ(calc(var(--s)/2));filter:brightness(.82)}
+.f-left{transform:rotateY(-90deg) translateZ(calc(var(--s)/2));filter:brightness(.68)}
+.f-top{transform:rotateX(90deg) translateZ(calc(var(--s)/2));filter:brightness(1.12)}
+.f-bottom{transform:rotateX(-90deg) translateZ(calc(var(--s)/2));filter:brightness(.5)}
+.mini-wrap{position:absolute;perspective:500px;animation:bob var(--bob,4s) ease-in-out infinite alternate}
+.cube.mini{--s:clamp(32px,7vw,50px)}
+.scene-tag{position:absolute;left:.9rem;bottom:.8rem;display:flex;align-items:center;gap:.5rem;font:500 .72rem var(--f-mono);letter-spacing:.06em;color:var(--muted)}
+.scene-tag i{width:8px;height:8px;background:var(--emerald);display:block}
+@keyframes spin{from{transform:rotateX(-22deg) rotateY(35deg)}to{transform:rotateX(-22deg) rotateY(395deg)}}
+@keyframes bob{from{transform:translateY(-9px)}to{transform:translateY(9px)}}
+@keyframes blink{50%{opacity:0}}
+@media (max-width:860px){.hero-grid{grid-template-columns:1fr}.scene{aspect-ratio:4/3}}
+
+/* sections */
+section{padding-block:clamp(3rem,7vw,5.5rem)}
+section.alt{background:var(--bg2);border-block:2px solid var(--line)}
+.sec-head{display:grid;gap:.7rem;margin-bottom:2.2rem}
+.kicker{font:500 .78rem var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--c,var(--emerald))}
+h2{font-size:clamp(1.9rem,4.6vw,2.9rem)}
+.sec-head p{color:var(--muted);max-width:60ch}
+
+/* about */
+.about{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:2.5rem;align-items:start}
+.about p+p{margin-top:1rem}
+.about p{color:var(--muted)}
+.about p b{color:var(--fg);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.8rem}
+.stat{border-left:4px solid var(--c);padding:.2rem 0 .2rem .9rem}
+.stat strong{display:block;font:700 1.7rem var(--f-display);color:var(--fg)}
+.stat span{font:400 .8rem var(--f-mono);color:var(--muted)}
+.skills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.skill-group{background:var(--panel);border:2px solid var(--line);padding:1.1rem 1.1rem 1.25rem;box-shadow:5px 5px 0 var(--shadow);min-width:0}
+.skill-group h3{font-size:1.15rem;color:var(--c);margin-bottom:1rem}
+.skill-group ul{list-style:none;margin:0;padding:0;display:grid;gap:.9rem}
+.row{display:flex;justify-content:space-between;gap:.75rem;font-size:.88rem;margin-bottom:.35rem}
+.row em{font:400 .72rem var(--f-mono);font-style:normal;color:var(--muted);white-space:nowrap}
+.bar-lv{display:block;height:12px;position:relative;background:var(--bg);border:2px solid var(--line)}
+.bar-lv::before{content:"";position:absolute;inset:0 auto 0 0;width:var(--lv);background:var(--c)}
+.bar-lv::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),var(--panel) calc(10% - 2px) 10%)}
+@media (max-width:980px){.about{grid-template-columns:1fr}}
+@media (max-width:560px){.skills{grid-template-columns:1fr}}
+
+/* projects */
+.filters{display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.8rem}
+.chip{font:500 .78rem var(--f-mono);letter-spacing:.08em;text-transform:uppercase;padding:.5rem .9rem;cursor:pointer;color:var(--muted);background:var(--panel);border:2px solid var(--line)}
+.chip:hover{color:var(--fg)}
+.chip[aria-pressed="true"]{color:var(--ink);background:var(--emerald);border-color:var(--emerald-dd)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:1.4rem}
+.card{position:relative;display:flex;flex-direction:column;gap:.9rem;min-width:0;padding:1.25rem;background:var(--panel);border:2px solid var(--line);box-shadow:5px 5px 0 var(--shadow);transition:transform .15s,box-shadow .15s,border-color .15s}
+.card:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 var(--c);border-color:var(--c)}
+.card-top{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.ico{width:48px;height:48px;flex:none;display:grid;place-items:center;background:var(--c);color:var(--ink);font:700 1.15rem var(--f-display);
+  box-shadow:inset 3px 3px 0 rgba(255,255,255,.35),inset -3px -3px 0 rgba(0,0,0,.3)}
+.ico.sm{font-size:.8rem;letter-spacing:-.02em}
+.ver{font:500 .72rem var(--f-mono);color:var(--c);border:2px solid var(--c);padding:.15rem .5rem}
+.card h3{font-size:1.4rem}
+.card p{color:var(--muted);font-size:.94rem}
+.tags{display:flex;flex-wrap:wrap;gap:.4rem;margin:0;padding:0;list-style:none}
+.tags li{font:500 .7rem var(--f-mono);padding:.15rem .5rem;border:1px solid var(--line);color:var(--muted)}
+.card-foot{margin-top:auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem;padding-top:.9rem;border-top:2px dashed var(--line);font:400 .78rem var(--f-mono)}
+.card-foot span{color:var(--muted)}
+.card-foot a{color:var(--c);text-decoration:none;font-weight:600}
+.card-foot a:hover{text-decoration:underline}
+
+/* windows, code, console */
+.show{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:1.6rem;align-items:start}
+@media (max-width:940px){.show{grid-template-columns:1fr}}
+.win{min-width:0;background:var(--panel);border:2px solid var(--line);box-shadow:6px 6px 0 var(--shadow)}
+.win-bar{display:flex;align-items:center;gap:.9rem;padding:.55rem .9rem;background:var(--panel2);border-bottom:2px solid var(--line);font:500 .75rem var(--f-mono);color:var(--muted)}
+.dots{display:flex;gap:6px;flex:none}
+.dots i{display:block;width:10px;height:10px}
+.dots i:nth-child(1){background:var(--redstone)}.dots i:nth-child(2){background:var(--gold)}.dots i:nth-child(3){background:var(--emerald)}
+.tabs{display:flex;gap:.2rem;overflow-x:auto;min-width:0}
+.tab{font:500 .75rem var(--f-mono);white-space:nowrap;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:.35rem .7rem;cursor:pointer}
+.tab:hover{color:var(--fg)}
+.tab[aria-selected="true"]{color:var(--fg);border-color:var(--emerald)}
+pre{margin:0;padding:1.1rem 1.2rem;overflow-x:auto;font:400 .82rem/1.75 var(--f-mono);tab-size:4;color:var(--fg)}
+.k{color:var(--redstone)}.s{color:var(--emerald)}.c{color:var(--muted);font-style:italic}.t{color:var(--diamond)}.f{color:var(--gold)}.n{color:var(--lapis)}.a{color:var(--gold)}
+.console{padding:1.1rem 1.2rem;font:400 .78rem/1.75 var(--f-mono);white-space:pre-wrap;overflow-wrap:anywhere;color:var(--fg)}
+.console .tm{color:var(--muted)}.console .lv{color:var(--diamond)}.console .pl{color:var(--gold)}.console .ok{color:var(--emerald)}
+.prompt{display:flex;gap:.6rem;padding:.9rem 1.2rem;border-top:2px solid var(--line);font:500 .82rem var(--f-mono);background:var(--bg2);min-height:5.2rem;flex-direction:column}
+.prompt-line{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.prompt-line b{color:var(--emerald)}
+.cursor{display:inline-block;width:.6em;height:1.1em;background:var(--emerald);animation:blink 1s steps(1) infinite}
+#cmdout{color:var(--muted);font-weight:400;overflow-wrap:anywhere}
+
+/* services */
+.cards4{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:1.4rem}
+.price{font:600 .85rem var(--f-mono);color:var(--c)}
+.steps{list-style:none;margin:3rem 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:1.2rem;counter-reset:s}
+.steps li{position:relative;padding:1rem 1rem 1.1rem;border:2px solid var(--line);background:var(--panel);min-width:0}
+.steps .num{display:grid;place-items:center;width:34px;height:34px;margin-bottom:.8rem;background:var(--c);color:var(--ink);font:700 1rem var(--f-display);box-shadow:inset 2px 2px 0 rgba(255,255,255,.35),inset -2px -2px 0 rgba(0,0,0,.3)}
+.steps h3{font-size:1.1rem;margin-bottom:.35rem}
+.steps p{font-size:.88rem;color:var(--muted)}
+.sub-title{margin-top:3.2rem;font-size:1.5rem}
+
+/* contact */
+.contact{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:2rem;align-items:start}
+@media (max-width:900px){.contact{grid-template-columns:1fr}}
+.faq{display:grid;gap:.8rem}
+details{background:var(--panel);border:2px solid var(--line)}
+summary{display:flex;justify-content:space-between;gap:1rem;padding:1rem 1.2rem;cursor:pointer;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:600 1.1rem var(--f-mono);color:var(--emerald)}
+details[open] summary::after{content:"\2212"}
+details[open]{border-color:var(--emerald-d)}
+details p{padding:0 1.2rem 1.1rem;color:var(--muted);font-size:.94rem}
+.contact-box{padding:clamp(1.25rem,4vw,2rem);background:var(--panel);border:2px solid var(--emerald-d);box-shadow:8px 8px 0 var(--emerald-dd);display:grid;gap:1.2rem;min-width:0}
+.contact-box h3{font-size:1.7rem}
+.contact-box>p{color:var(--muted)}
+.copy-row{display:flex;align-items:center;gap:.8rem;padding:.7rem .9rem;border:2px solid var(--line);background:var(--bg2);min-width:0}
+.copy-row .lbl{font:500 .68rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);width:4.6rem;flex:none}
+.copy-row .val{flex:1;min-width:0;font:500 .9rem var(--f-mono);overflow-wrap:anywhere;user-select:all}
+.copy-row .val a{text-decoration:none;color:var(--fg)}
+.copy-row .val a:hover{color:var(--emerald)}
+.copy{font:600 .72rem var(--f-mono);text-transform:uppercase;letter-spacing:.08em;cursor:pointer;color:var(--fg);background:var(--panel2);border:2px solid var(--line);padding:.4rem .7rem;min-width:5.6rem}
+.copy:hover{border-color:var(--emerald)}
+.status{display:flex;align-items:center;gap:.6rem;font:500 .78rem var(--f-mono);color:var(--muted)}
+.status i{width:10px;height:10px;background:var(--emerald);display:block}
+
+footer{border-top:2px solid var(--line);padding-block:2rem;color:var(--muted);font:400 .8rem var(--f-mono)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:.8rem 2rem;justify-content:space-between}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <a class="brand" href="#inicio" aria-label="auoifhiaifhi Minecraft Development, início">
+      <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path class="c-top" d="M16 3 28 10 16 17 4 10z"/><path class="c-l" d="M4 10 16 17v13L4 23z"/><path class="c-r" d="M28 10 16 17v13l12-7z"/></svg>
+      <span>auoifhiaifhi Minecraft Development</span>
+    </a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav">Menu</button>
+    <nav class="nav" id="nav" aria-label="Principal">
+      <a href="#sobre">Sobre</a>
+      <a href="#projetos">Projetos</a>
+      <a href="#codigo">Código</a>
+      <a href="#servicos">Serviços</a>
+      <a href="#contato">Contato</a>
+      <a class="btn btn-primary btn-sm" href="#contato">Pedir plugin</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="inicio">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Desenvolvedor de plugins Minecraft</p>
+        <h1>Plugins feitos para <em>aguentar</em> o servidor cheio.</h1>
+        <p class="lead">Esta é a <b>auoifhiaifhi Minecraft Development</b>: desenvolvimento em Java e Kotlin focado em Paper, Folia e Velocity. Entrego economia, minigames, proteção de terrenos e redes completas, com código limpo, config simples e TPS estável.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#projetos">Ver projetos</a>
+          <a class="btn" href="#contato">Pedir um plugin</a>
+        </div>
+        <ul class="chips" aria-label="Tecnologias principais">
+          <li style="--c:var(--emerald)">Paper</li>
+          <li style="--c:var(--diamond)">Folia</li>
+          <li style="--c:var(--lapis)">Velocity</li>
+          <li style="--c:var(--gold)">Java 21</li>
+          <li style="--c:var(--redstone)">Kotlin</li>
+        </ul>
+      </div>
+
+      <div class="scene" aria-hidden="true">
+        <div class="stage"><div class="cube" id="heroCube"></div></div>
+        <div class="mini-wrap" style="top:9%;left:8%;--bob:4.2s"><div class="cube mini" data-pal="gold" style="--dur:9s"></div></div>
+        <div class="mini-wrap" style="top:14%;right:9%;--bob:5s"><div class="cube mini rev" data-pal="redstone" style="--dur:11s"></div></div>
+        <div class="mini-wrap" style="bottom:17%;left:11%;--bob:3.6s"><div class="cube mini rev" data-pal="diamond" style="--dur:10s"></div></div>
+        <div class="mini-wrap" style="bottom:15%;right:10%;--bob:4.6s"><div class="cube mini" data-pal="lapis" style="--dur:12s"></div></div>
+        <div class="scene-tag"><i></i>TPS 20.0 · MSPT 11.4 ms</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt" id="sobre">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">Sobre</p>
+        <h2>Código que se explica sozinho</h2>
+      </div>
+      <div class="about">
+        <div>
+          <p>Desenvolvo plugins para Minecraft em Java e Kotlin, <b>de sistemas simples a projetos completos</b>: economia com banco de dados, minigames com filas, proteção de terrenos e redes com Velocity.</p>
+          <p>Gosto de configs que o dono do servidor entende, de comandos que têm tab-complete e de <b>métricas que provam que o plugin não pesa no tick</b>. Antes de entregar, rodo o spark e mando o relatório junto.</p>
+          <div class="stats">
+            <div class="stat" style="--c:var(--emerald)"><strong>Grátis</strong><span>todos os serviços</span></div>
+            <div class="stat" style="--c:var(--gold)"><strong>Java 21</strong><span>e Kotlin</span></div>
+            <div class="stat" style="--c:var(--diamond)"><strong>1.8 – 1.21</strong><span>versões atendidas</span></div>
+            <div class="stat" style="--c:var(--redstone)"><strong>TPS 20</strong><span>meta em toda entrega</span></div>
+          </div>
+        </div>
+
+        <div class="skills">
+          <div class="skill-group" style="--c:var(--emerald)">
+            <h3>Linguagens</h3>
+            <ul>
+              <li><div class="row"><span>Java 8 – 21</span><em>Avançado</em></div><span class="bar-lv" style="--lv:95%"></span></li>
+              <li><div class="row"><span>Kotlin</span><em>Avançado</em></div><span class="bar-lv" style="--lv:80%"></span></li>
+              <li><div class="row"><span>SQL</span><em>Avançado</em></div><span class="bar-lv" style="--lv:85%"></span></li>
+            </ul>
+          </div>
+          <div class="skill-group" style="--c:var(--gold)">
+            <h3>Plataformas</h3>
+            <ul>
+              <li><div class="row"><span>Paper / Spigot</span><em>Avançado</em></div><span class="bar-lv" style="--lv:95%"></span></li>
+              <li><div class="row"><span>Velocity</span><em>Avançado</em></div><span class="bar-lv" style="--lv:80%"></span></li>
+              <li><div class="row"><span>Folia</span><em>Intermediário</em></div><span class="bar-lv" style="--lv:70%"></span></li>
+              <li><div class="row"><span>Fabric</span><em>Intermediário</em></div><span class="bar-lv" style="--lv:60%"></span></li>
+            </ul>
+          </div>
+          <div class="skill-group" style="--c:var(--diamond)">
+            <h3>Dados e rede</h3>
+            <ul>
+              <li><div class="row"><span>MySQL / MariaDB</span><em>Avançado</em></div><span class="bar-lv" style="--lv:85%"></span></li>
+              <li><div class="row"><span>Redis</span><em>Avançado</em></div><span class="bar-lv" style="--lv:80%"></span></li>
+              <li><div class="row"><span>PacketEvents</span><em>Intermediário</em></div><span class="bar-lv" style="--lv:70%"></span></li>
+            </ul>
+          </div>
+          <div class="skill-group" style="--c:var(--redstone)">
+            <h3>Ferramentas</h3>
+            <ul>
+              <li><div class="row"><span>Gradle</span><em>Avançado</em></div><span class="bar-lv" style="--lv:90%"></span></li>
+              <li><div class="row"><span>Git e CI</span><em>Avançado</em></div><span class="bar-lv" style="--lv:85%"></span></li>
+              <li><div class="row"><span>spark (profiler)</span><em>Avançado</em></div><span class="bar-lv" style="--lv:90%"></span></li>
+              <li><div class="row"><span>Docker</span><em>Intermediário</em></div><span class="bar-lv" style="--lv:65%"></span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projetos">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">Projetos</p>
+        <h2>Plugins gratuitos para Paper</h2>
+        <p>Código aberto com licença MIT. Cada plugin tem comandos, permissões e configuração documentados no repositório.</p>
+      </div>
+      <div class="grid">
+        <article class="card" style="--c:var(--emerald)">
+          <div class="card-top"><span class="ico">SH</span><span class="ver">v1.0.0</span></div>
+          <h3>SimpleHomes</h3>
+          <p>Casas por jogador com limite, espera antes do teleporte que cancela se o jogador se mover e mensagens editáveis no config.</p>
+          <ul class="tags"><li>Paper</li><li>Java 21</li><li>MiniMessage</li><li>YAML</li></ul>
+          <div class="card-foot"><span>Paper 1.21+</span><a href="https://github.com/auoifhiaifhi-minecraft-developer/minecraft-plugins/tree/main/minecraft-plugins/simple-homes" target="_blank" rel="noopener">Código ↗</a></div>
+        </article>
+        <article class="card" style="--c:var(--diamond)">
+          <div class="card-top"><span class="ico">TI</span><span class="ver">v1.0.0</span></div>
+          <h3>TpsInfo</h3>
+          <p>Relatório de TPS, MSPT, memória e carga de cada mundo, com alerta para a staff quando o servidor fica lento.</p>
+          <ul class="tags"><li>Paper</li><li>Java 21</li><li>TPS</li><li>Alertas</li></ul>
+          <div class="card-foot"><span>Paper 1.21+</span><a href="https://github.com/auoifhiaifhi-minecraft-developer/minecraft-plugins/tree/main/minecraft-plugins/tps-info" target="_blank" rel="noopener">Código ↗</a></div>
+        </article>
+        <article class="card" style="--c:var(--gold)">
+          <div class="card-top"><span class="ico">WK</span><span class="ver">v1.0.0</span></div>
+          <h3>WelcomeKit</h3>
+          <p>Título de boas-vindas, kit inicial automático, comando /kit com tempo de espera e mensagens de entrada e saída.</p>
+          <ul class="tags"><li>Paper</li><li>Java 21</li><li>Kits</li><li>Eventos</li></ul>
+          <div class="card-foot"><span>Paper 1.21+</span><a href="https://github.com/auoifhiaifhi-minecraft-developer/minecraft-plugins/tree/main/minecraft-plugins/welcome-kit" target="_blank" rel="noopener">Código ↗</a></div>
+        </article>
+      </div>
+      <p style="margin-top:1.6rem"><a class="btn" href="https://github.com/auoifhiaifhi-minecraft-developer/minecraft-plugins" target="_blank" rel="noopener">Ver o repositório no GitHub ↗</a></p>
+    </div>
+  </section>
+
+  <section class="alt" id="codigo">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker" style="--c:var(--diamond)">Código</p>
+        <h2>Do código ao console</h2>
+        <p>Um trecho de como escrevo e o resultado rodando em um servidor de teste.</p>
+      </div>
+
+      <div class="show">
+        <div class="win">
+          <div class="win-bar">
+            <span class="dots"><i></i><i></i><i></i></span>
+            <div class="tabs" role="tablist" aria-label="Arquivos de exemplo">
+              <button class="tab" role="tab" id="t1" aria-selected="true" aria-controls="p1">CooldownListener.java</button>
+              <button class="tab" role="tab" id="t2" aria-selected="false" aria-controls="p2">HomeCommand.kt</button>
+              <button class="tab" role="tab" id="t3" aria-selected="false" aria-controls="p3">plugin.yml</button>
+            </div>
+          </div>
+<pre id="p1" role="tabpanel" aria-labelledby="t1"><code><span class="k">public final class</span> <span class="t">CooldownListener</span> <span class="k">implements</span> <span class="t">Listener</span> {
+
+    <span class="k">private final</span> <span class="t">Map</span>&lt;<span class="t">UUID</span>, <span class="t">Long</span>&gt; lastUse = <span class="k">new</span> <span class="t">HashMap</span>&lt;&gt;();
+    <span class="k">private final long</span> cooldownMs;
+
+    <span class="k">public</span> <span class="f">CooldownListener</span>(<span class="k">long</span> cooldownMs) {
+        <span class="k">this</span>.cooldownMs = cooldownMs;
+    }
+
+    <span class="a">@EventHandler</span>(ignoreCancelled = <span class="k">true</span>)
+    <span class="k">public void</span> <span class="f">onUse</span>(<span class="t">PlayerInteractEvent</span> event) {
+        <span class="t">Player</span> player = event.<span class="f">getPlayer</span>();
+        <span class="k">long</span> now = <span class="t">System</span>.<span class="f">currentTimeMillis</span>();
+        <span class="k">long</span> left = lastUse.<span class="f">getOrDefault</span>(player.<span class="f">getUniqueId</span>(), <span class="n">0L</span>) + cooldownMs - now;
+
+        <span class="k">if</span> (left &gt; <span class="n">0</span>) {
+            player.<span class="f">sendActionBar</span>(<span class="t">Component</span>.<span class="f">text</span>(<span class="s">"Aguarde "</span> + (left / <span class="n">1000</span> + <span class="n">1</span>) + <span class="s">"s"</span>, <span class="t">NamedTextColor</span>.RED));
+            event.<span class="f">setCancelled</span>(<span class="k">true</span>);
+            <span class="k">return</span>;
+        }
+        lastUse.<span class="f">put</span>(player.<span class="f">getUniqueId</span>(), now);
+    }
+}</code></pre>
+<pre id="p2" role="tabpanel" aria-labelledby="t2" hidden><code><span class="k">class</span> <span class="t">HomeCommand</span>(<span class="k">private val</span> homes: <span class="t">HomeService</span>) : <span class="t">CommandExecutor</span> {
+
+    <span class="k">override fun</span> <span class="f">onCommand</span>(
+        sender: <span class="t">CommandSender</span>, cmd: <span class="t">Command</span>,
+        label: <span class="t">String</span>, args: <span class="t">Array</span>&lt;<span class="t">String</span>&gt;
+    ): <span class="t">Boolean</span> {
+        <span class="k">val</span> player = sender <span class="k">as</span>? <span class="t">Player</span> ?: <span class="f">run</span> {
+            sender.<span class="f">sendMessage</span>(<span class="s">"Apenas jogadores."</span>)
+            <span class="k">return</span> <span class="k">true</span>
+        }
+        <span class="k">val</span> name = args.<span class="f">firstOrNull</span>() ?: <span class="s">"casa"</span>
+
+        homes.<span class="f">find</span>(player.uniqueId, name)
+            ?.<span class="f">let</span> { player.<span class="f">teleportAsync</span>(it) }
+            ?: player.<span class="f">sendMessage</span>(<span class="t">Component</span>.<span class="f">text</span>(<span class="s">"Home não encontrada."</span>, <span class="t">NamedTextColor</span>.RED))
+
+        <span class="k">return</span> <span class="k">true</span>
+    }
+}</code></pre>
+<pre id="p3" role="tabpanel" aria-labelledby="t3" hidden><code><span class="t">name</span>: <span class="s">MeuPlugin</span>
+<span class="t">version</span>: <span class="n">1.0.0</span>
+<span class="t">main</span>: <span class="s">dev.auoifhiaifhi.meuplugin.MeuPlugin</span>
+<span class="t">api-version</span>: <span class="s">"1.21"</span>
+<span class="t">folia-supported</span>: <span class="k">true</span>
+
+<span class="t">commands</span>:
+  <span class="t">home</span>:
+    <span class="t">description</span>: <span class="s">Teleporta para uma casa salva</span>
+    <span class="t">usage</span>: <span class="s">/home [nome]</span>
+    <span class="t">permission</span>: <span class="s">meuplugin.use</span>
+
+<span class="t">permissions</span>:
+  <span class="t">meuplugin.use</span>:
+    <span class="t">default</span>: <span class="k">true</span></code></pre>
+        </div>
+
+        <div class="win">
+          <div class="win-bar"><span class="dots"><i></i><i></i><i></i></span><span>console · servidor de teste</span></div>
+<div class="console"><span class="tm">[12:04:11</span> <span class="lv">INFO</span><span class="tm">]:</span> <span class="pl">[auoifhiaifhi]</span> Carregando plugin...
+<span class="tm">[12:04:12</span> <span class="lv">INFO</span><span class="tm">]:</span> <span class="pl">[auoifhiaifhi]</span> Configuração carregada
+<span class="tm">[12:04:12</span> <span class="lv">INFO</span><span class="tm">]:</span> <span class="pl">[auoifhiaifhi]</span> Banco de dados conectado em 41 ms
+<span class="tm">[12:04:14</span> <span class="lv">INFO</span><span class="tm">]:</span> <span class="ok">Done (3.482s)!</span></div>
+          <div class="prompt" aria-live="off">
+            <div class="prompt-line"><b>&gt;</b><span id="typed">/tps</span><span class="cursor"></span></div>
+            <span id="cmdout">TPS 20.0 · MSPT 11.4 ms</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="servicos">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker" style="--c:var(--gold)">Serviços</p>
+        <h2>O que posso fazer pelo seu servidor</h2>
+        <p>Todos os serviços são gratuitos.</p>
+      </div>
+
+      <div class="cards4">
+        <article class="card" style="--c:var(--emerald)">
+          <span class="ico sm">&lt;/&gt;</span>
+          <h3>Plugin sob medida</h3>
+          <p>Do briefing ao .jar final: comandos, GUIs, banco de dados e uma API para integrar com os seus outros plugins.</p>
+          <span class="price">Grátis</span>
+        </article>
+        <article class="card" style="--c:var(--redstone)">
+          <span class="ico sm">TPS</span>
+          <h3>Otimização e lag</h3>
+          <p>Análise com spark, caça a gargalos no tick e ajuste de chunks, entidades e redstone. Relatório de antes e depois.</p>
+          <span class="price">Grátis</span>
+        </article>
+        <article class="card" style="--c:var(--diamond)">
+          <span class="ico sm">NET</span>
+          <h3>Rede e proxy</h3>
+          <p>Velocity, filas, chat global e dados sincronizados por Redis entre lobby, survival e minigames.</p>
+          <span class="price">Grátis</span>
+        </article>
+        <article class="card" style="--c:var(--lapis)">
+          <span class="ico sm">1.21</span>
+          <h3>Atualização e correção</h3>
+          <p>Portar plugin antigo para versões novas do Paper, corrigir bugs e trocar NMS por API estável.</p>
+          <span class="price">Grátis</span>
+        </article>
+      </div>
+
+      <h3 class="sub-title">Como funciona</h3>
+      <ol class="steps">
+        <li style="--c:var(--emerald)"><span class="num">1</span><h3>Briefing</h3><p>Conversamos sobre regras, comandos e permissões que você precisa.</p></li>
+        <li style="--c:var(--gold)"><span class="num">2</span><h3>Protótipo</h3><p>Uma versão jogável em servidor de teste, para validar cedo.</p></li>
+        <li style="--c:var(--diamond)"><span class="num">3</span><h3>Desenvolvimento</h3><p>Código organizado, commits pequenos e configuração documentada.</p></li>
+        <li style="--c:var(--redstone)"><span class="num">4</span><h3>Teste de carga</h3><p>Bots e profiler para confirmar que o TPS segura com o servidor cheio.</p></li>
+        <li style="--c:var(--lapis)"><span class="num">5</span><h3>Entrega</h3><p>Jar, código-fonte, guia de uso e suporte pós-entrega.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="alt" id="contato">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="kicker">Contato</p>
+        <h2>Vamos montar o seu plugin?</h2>
+        <p>Conte a ideia, a versão do servidor e o prazo. Respondo assim que possível.</p>
+      </div>
+
+      <div class="contact">
+        <div class="faq">
+          <details open>
+            <summary>Quais versões do Minecraft você atende?</summary>
+            <p>Do 1.8 ao 1.21 em Spigot e Paper. Para versões novas uso a API moderna; para as antigas mantenho módulos de compatibilidade separados.</p>
+          </details>
+          <details>
+            <summary>Recebo o código-fonte?</summary>
+            <p>Sim. Em projetos sob medida o código-fonte e o repositório ficam com você.</p>
+          </details>
+          <details>
+            <summary>Funciona em Folia?</summary>
+            <p>Os plugins novos já nascem thread-safe e marcados como compatíveis com Folia. Os antigos eu adapto sob orçamento.</p>
+          </details>
+          <details>
+            <summary>Quanto custa?</summary>
+            <p>Não tem pagamento: os serviços são gratuitos. Projetos grandes podem ser divididos em etapas.</p>
+          </details>
+          <details>
+            <summary>Tem suporte depois da entrega?</summary>
+            <p>Corrijo bugs do que entreguei durante 30 dias. Depois disso, novas funções entram como atualização.</p>
+          </details>
+        </div>
+
+        <div class="contact-box">
+          <h3>Fale comigo</h3>
+          <p>Escolha o canal que for mais fácil. Clique em copiar e cole no seu aplicativo.</p>
+          <div class="copy-row"><span class="lbl">Discord</span><span class="val" id="v1">@tavio0945</span><button class="copy" data-t="v1">Copiar</button></div>
+          <div class="copy-row"><span class="lbl">E-mail</span><span class="val" id="v2">auoifhiaifhi@gmail.com</span><button class="copy" data-t="v2">Copiar</button></div>
+          <div class="copy-row"><span class="lbl">GitHub</span><span class="val" id="v3"><a href="https://github.com/auoifhiaifhi-minecraft-developer" target="_blank" rel="noopener">github.com/auoifhiaifhi-minecraft-developer</a></span><button class="copy" data-t="v3">Copiar</button></div>
+          <p class="status"><i></i>Aceitando novos projetos</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 auoifhiaifhi Minecraft Development</span>
+    <span>Compilado com Java 21 e Gradle</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  /* ---------- textures (16x16 pixel art generated in canvas) ---------- */
+  function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  function tex(draw){var c=document.createElement('canvas');c.width=c.height=16;var x=c.getContext('2d');draw(x);return c.toDataURL()}
+  function pick(r,arr){return arr[Math.floor(r()*arr.length)]}
+  function block(pal,seed){var r=rng(seed);return tex(function(x){
+    for(var i=0;i<16;i++)for(var j=0;j<16;j++){x.fillStyle=pick(r,pal);x.fillRect(i,j,1,1)}
+    x.fillStyle='rgba(255,255,255,.28)';x.fillRect(0,0,16,1);x.fillRect(0,0,1,16);
+    x.fillStyle='rgba(0,0,0,.3)';x.fillRect(0,15,16,1);x.fillRect(15,0,1,16)})}
+  function ore(base,fleck,seed){var r=rng(seed);return tex(function(x){
+    for(var i=0;i<16;i++)for(var j=0;j<16;j++){x.fillStyle=pick(r,base);x.fillRect(i,j,1,1)}
+    var cells=[[0,0],[1,0],[0,1],[1,1],[-1,0]];
+    for(var n=0;n<6;n++){var cx=1+Math.floor(r()*13),cy=1+Math.floor(r()*13);
+      cells.forEach(function(d){if(r()<.75){x.fillStyle=pick(r,fleck);x.fillRect(cx+d[0],cy+d[1],1,1)}})}
+    x.fillStyle='rgba(0,0,0,.28)';x.fillRect(0,15,16,1);x.fillRect(15,0,1,16)})}
+  var P={
+    stone:['#34454a','#3b4e53','#2d3c40','#415459'],
+    dark:['#202b2e','#263236','#1b2528'],
+    fleck:['#2ee27a','#9bf5c0','#13a85a'],
+    emerald:['#1fbf6a','#27d476','#35e585','#19a85b'],
+    gold:['#f5c542','#ffd75e','#e6b02c','#fbd04f'],
+    redstone:['#d6382d','#f0493d','#b92a21','#e5453a'],
+    diamond:['#3fd6c4','#4de3d0','#2bb8a8','#6af0de'],
+    lapis:['#4a63d8','#5b7cff','#3a4fb8','#6d86ff']
+  };
+  function face(el,n,src){var d=document.createElement('div');d.className='face f-'+n;d.style.backgroundImage='url('+src+')';el.appendChild(d)}
+  function build(el,sides,top,bottom){['front','back','right','left'].forEach(function(n,i){face(el,n,sides[i])});face(el,'top',top);face(el,'bottom',bottom)}
+
+  build(document.getElementById('heroCube'),
+    [ore(P.stone,P.fleck,11),ore(P.stone,P.fleck,22),ore(P.stone,P.fleck,33),ore(P.stone,P.fleck,44)],
+    block(P.emerald,5),block(P.dark,6));
+  document.querySelectorAll('.cube.mini').forEach(function(el,k){
+    var pal=P[el.dataset.pal];build(el,[block(pal,k*7+1),block(pal,k*7+2),block(pal,k*7+3),block(pal,k*7+4)],block(pal,k*7+5),block(pal,k*7+6))});
+
+  /* ---------- mobile menu ---------- */
+  var nav=document.getElementById('nav'),mb=document.getElementById('menuBtn');
+  mb.addEventListener('click',function(){var o=nav.classList.toggle('open');mb.setAttribute('aria-expanded',o)});
+  nav.addEventListener('click',function(e){if(e.target.closest('a')){nav.classList.remove('open');mb.setAttribute('aria-expanded','false')}});
+
+  /* ---------- scrollspy ---------- */
+  var links=[].slice.call(document.querySelectorAll('.nav a[href^="#"]'));
+  var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a});
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(e.isIntersecting){links.forEach(function(l){l.classList.remove('on')});var a=map[e.target.id];if(a)a.classList.add('on')}})},{rootMargin:'-45% 0px -50% 0px'});
+    document.querySelectorAll('main section[id]').forEach(function(s){io.observe(s)});
+  }
+
+  /* ---------- project filter ---------- */
+  var chips=[].slice.call(document.querySelectorAll('.chip')),cards=[].slice.call(document.querySelectorAll('#grid .card'));
+  chips.forEach(function(b){b.addEventListener('click',function(){
+    chips.forEach(function(c){c.setAttribute('aria-pressed',c===b)});
+    cards.forEach(function(c){c.hidden=!(b.dataset.f==='all'||c.dataset.cat===b.dataset.f)})})});
+
+  /* ---------- code tabs ---------- */
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  tabs.forEach(function(t){t.addEventListener('click',function(){
+    tabs.forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on);document.getElementById(x.getAttribute('aria-controls')).hidden=!on})})});
+
+  /* ---------- copy buttons ---------- */
+  document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){
+    var el=document.getElementById(b.dataset.t),txt=el.textContent.trim();
+    function done(m){b.textContent=m;setTimeout(function(){b.textContent='Copiar'},1800)}
+    function sel(){try{var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r)}catch(e){}done('Selecionado')}
+    try{navigator.clipboard.writeText(txt).then(function(){done('Copiado')},sel)}catch(e){sel()}})});
+
+  /* ---------- console typing demo ---------- */
+  var demo=[
+    ['/tps','TPS 20.0 · MSPT 11.4 ms'],
+    ['/version','Paper 1.21 · Java 21'],
+    ['/plugins','Plugins (1): auoifhiaifhi']
+  ];
+  var typed=document.getElementById('typed'),out=document.getElementById('cmdout');
+  var sleep=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    (async function loop(){var i=0;await sleep(2800);
+      while(true){
+        out.textContent='';typed.textContent='';
+        for(var k=0;k<demo[i][0].length;k++){typed.textContent+=demo[i][0][k];await sleep(55)}
+        await sleep(350);out.textContent=demo[i][1];await sleep(3000);
+        i=(i+1)%demo.length;
+      }})();
+  }
+})();
+</script>
+</body>
+</html>
